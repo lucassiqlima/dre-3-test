@@ -7,11 +7,12 @@ x-airflow-common:
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: 'bTrLpBtaMSzUM95NK_VRquKlkMLogf8tVh8Sm9MG8v8='
+    AIRFLOW__WEBSERVER__SECRET_KEY: 'bTrLpBtaMSzUM95NK_VRquKlkMLogf8tVh8Sm9MG8v8='
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
   volumes:
-    - ./dag:/opt/airflow/dags
+    - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
   user: "5000"
@@ -28,7 +29,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_USER: admin
+      POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
@@ -38,6 +39,12 @@ services:
       interval: 5s
       retries: 5
     restart: "no"
+
+  airflow-db-init:
+    <<: *airflow-common
+    command: db init
+    depends_on:
+      <<: *airflow-common-depends-on    
 
   redis:
     image: redis:latest
@@ -61,6 +68,11 @@ services:
       timeout: 10s
       retries: 5
     restart: "no"
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: airflow
+      _AIRFLOW_WWW_USER_PASSWORD: airflow    
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -120,7 +132,7 @@ services:
       - -c
       - |
         mkdir -p /sources/logs /sources/dags /sources/plugins
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        chown -R "${AIRFLOW_UID:-1000}:0" /sources/{logs,dags,plugins}
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
