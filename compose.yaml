@@ -10,7 +10,7 @@ x-airflow-common:
     AIRFLOW__CORE__FERNET_KEY: 'bTrLpBtaMSzUM95NK_VRquKlkMLogf8tVh8Sm9MG8v8='
     AIRFLOW__WEBSERVER__SECRET_KEY: 'bTrLpBtaMSzUM95NK_VRquKlkMLogf8tVh8Sm9MG8v8='
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'    
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
@@ -38,7 +38,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
-    restart: "no"
+    restart: always
 
   airflow-db-init:
     <<: *airflow-common
@@ -55,7 +55,7 @@ services:
       interval: 5s
       timeout: 30s
       retries: 50
-    restart: "no"
+    restart: always
 
   airflow-webserver:
     <<: *airflow-common
@@ -67,12 +67,12 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: "no"
+    restart: always
     environment:
       <<: *airflow-common-env
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: airflow
-      _AIRFLOW_WWW_USER_PASSWORD: airflow    
+      _AIRFLOW_WWW_USER_PASSWORD: airflow     
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -86,7 +86,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: "no"
+    restart: always
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -105,7 +105,7 @@ services:
     environment:
       <<: *airflow-common-env
       DUMB_INIT_SETSID: "0"
-    restart: "no"
+    restart: always
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -119,7 +119,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: "no"
+    restart: always
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -127,7 +127,7 @@ services:
 
   airflow-init:
     <<: *airflow-common
-    entrypoint: /bin/bash
+    entrypoint: /bin/bash    
     command:
       - -c
       - |
@@ -136,10 +136,7 @@ services:
     environment:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
-      _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: airflow
-      _AIRFLOW_WWW_USER_PASSWORD: airflow
-      _PIP_ADDITIONAL_REQUIREMENTS: ''
+      _PIP_ADDITIONAL_REQUIREMENTS: '' 
     user: "0:0"
     volumes:
       - .:/sources
@@ -166,7 +163,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: "no"
+    restart: always
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
