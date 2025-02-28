@@ -38,7 +38,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
-    restart: always 
+    restart: always
 
   redis:
     image: redis:latest
@@ -61,7 +61,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always   
+    restart: always
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -137,7 +137,7 @@ services:
   airflow-cli:
     <<: *airflow-common
     profiles:
-      - debug    
+      - debug
     environment:
       <<: *airflow-common-env
       CONNECTION_CHECK_MAX_COUNT: "0"
